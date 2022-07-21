@@ -8,7 +8,7 @@ pacientRouter
     .get('/', async(req, res) => {
         const pacientList = await PacientRecord.listAll();
 
-        res.send(pacientList);
+        res.json(pacientList);
     })
 
     .post('/', async (req, res) => {

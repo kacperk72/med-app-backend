@@ -1,10 +1,12 @@
 import * as express from "express";
 import * as cors from 'cors';
 import 'express-async-errors';
-import {handleError} from "./utils/errors";
 import './utils/db';
+
+import { handleError } from "./utils/errors";
 import { pacientRouter } from "./routers/pacient";
 import { doctorRouter } from "./routers/doctor";
+import { userRouter } from "./routers/user";
 
 const app = express();
 
@@ -15,6 +17,7 @@ app.use(express.json()); // Content-type: application/json
 
 app.use('/pacient', pacientRouter);
 app.use('/doctor', doctorRouter);
+app.use('/user', userRouter);
 
 app.use(handleError);
 
