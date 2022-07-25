@@ -2,8 +2,9 @@ import { UserEntity } from "../types/user";
 import { pool } from "../utils/db";
 import {v4 as uuid} from "uuid";
 import { ValidationError } from "../utils/errors";
+import { FieldPacket } from "mysql2";
 
-
+type UserRecordResults = [UserRecord[], FieldPacket[]];
 
 export class UserRecord implements UserEntity {
     id: string;
@@ -33,7 +34,7 @@ export class UserRecord implements UserEntity {
         }
         console.log(this.id, this.name, this.surname, this.login, this.password, this.role);
         
-        await pool.execute("INSERT INTO `dane_logowania`(`user_id`, `imie`,`nazwisko`,`login`,`haslo`,`rola`) VALUES (:id, :name, :surname, :login, :password, :role);",{
+        await pool.execute("INSERT INTO `dane_logowania`(`user_id`, `name`,`surname`,`login`,`password`,`role`) VALUES (:id, :name, :surname, :login, :password, :role);",{
             id: this.id,
             name: this.name,
             surname: this.surname,
@@ -44,14 +45,14 @@ export class UserRecord implements UserEntity {
         return this.id;
     }
 
-    async loginUser(): Promise<void> {
-        console.log("logowanie");
-        console.log(this.login, this.password);
-              
-        await pool.execute('SELECT `imie`,`nazwisko` FROM `dane_logowania` WHERE login=":login" && haslo=":password"', {
-            login: this.login,
-            password: this.password
-        });              
+    async loginUser(loginQuery: string, passwordQuery: string): Promise<UserRecord | null> {
+        console.log("logowanie użytkownika", loginQuery, passwordQuery);
         
+        const [result] = await pool.execute("SELECT * FROM `dane_logowania` WHERE `login` = :loginQuery AND `password` = :passwordQuery", {
+            loginQuery,
+            passwordQuery
+        }) as any;
+        // console.log(result);
+        return result[0];  
     }
 }

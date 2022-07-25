@@ -6,24 +6,28 @@ const jwt = require('jsonwebtoken');
 
 export const userRouter = Router();
 
+
 userRouter
     .post('/login',async (req, res) => {
         const user = new UserRecord(req.body as UserEntity)
-        await user.loginUser()
+                // console.log("req body", req.body);
+        
+        await user.loginUser(req.body.login, req.body.password)
             .then(result => {
-                console.log(req.body.login);
-                
-                const token = jwt.sign({login: req.body.login, password: req.body.password}, 'secret_key_for_json_token',
+                // console.log(result);
+                const token = jwt.sign({login: result.login, password: result.password, role: result.role}, 'secret_key_for_json_token',
                 {
                     expiresIn: "1h"
                 });
+                // console.log(token);
+                
                 res.status(200).json({
                     token,
                     result
                 })
             })
             .catch(e => {
-                res.status(500).json({
+                res.status(500).json({                    
                     error: e
                 })
             })
