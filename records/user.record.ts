@@ -26,6 +26,16 @@ export class UserRecord implements UserEntity {
         this.role = obj.role;
     }
 
+    async checkIfExsists(): Promise<Array<string>> {
+        console.log("sprawdzanie");
+        // //sprawdzenie czy taki login juz istnieje        
+        const [result] = await pool.execute('SELECT * FROM `dane_logowania` WHERE `login`= :login',{
+            login: this.login,
+        }) as any;
+        // console.log(result);
+        return result; 
+    }
+
     async save(): Promise<string> {
         console.log("dodawanie");
         

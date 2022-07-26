@@ -35,16 +35,27 @@ userRouter
     })
     .post('/register', async (req, res) => {     
         const newUser = new UserRecord(req.body as UserEntity);
-        await newUser.save()
-        .then(result => {
-            res.status(201).json({
-                message: "User created",
-                result
+        const userAlreadyExsist = await newUser.checkIfExsists();
+        console.log(userAlreadyExsist.length);
+        
+        if(userAlreadyExsist.length != 0){
+            console.log("User already exsist, can not create");
+            res.status(409).json({
+                message: "User with that login already exists"
             })
-        })
-        .catch(e => {
-            res.status(500).json({
-                error: e
+        } else {
+            await newUser.save()
+            .then(result => {
+                res.status(201).json({
+                    message: "User created",
+                    result
+                })
             })
-        })
+            .catch(e => {
+                res.status(500).json({
+                    error: e
+                })
+            })
+        }
+        
     })
