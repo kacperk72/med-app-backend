@@ -5,6 +5,6 @@ export interface DoctorEntity {
     role: string;
     name: string;
     surname: string;
-    specialty: string;
+    speciality: string;
     city: string;
 }
