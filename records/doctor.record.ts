@@ -78,13 +78,13 @@ export class DoctorRecord implements DoctorRecord {
         const {user_id} = user_idJson[0];
         // console.log(user_id);
         
-        const [daneLekarzaDB] = await pool.execute<RowDataPacket[]>("SELECT `dane_logowania`.`name`, `dane_logowania`.`surname`,`lekarze`.`speciality`,`lekarze`.`city` FROM `lekarze` LEFT JOIN `dane_logowania` ON `lekarze`.`id_lekarza` = `dane_logowania`.`user_id` WHERE `dane_logowania`.`user_id` = :user_id;", {
+        const [daneLekarzaDB] = await pool.execute<RowDataPacket[]>("SELECT `dane_logowania`.`name`, `dane_logowania`.`surname`,`lekarze`.`id_lekarza`, `lekarze`.`speciality`,`lekarze`.`city` FROM `lekarze` LEFT JOIN `dane_logowania` ON `lekarze`.`id_lekarza` = `dane_logowania`.`user_id` WHERE `dane_logowania`.`user_id` = :user_id;", {
             user_id
         })
         
         // console.log("daneLekarzaDB", daneLekarzaDB);
-        const {name, surname, speciality, city} = daneLekarzaDB[0];
-        const foundDoctor = {name,surname,speciality,city}
+        const {id_lekarza, name, surname, speciality, city} = daneLekarzaDB[0];
+        const foundDoctor = {id_lekarza, name,surname,speciality,city}
         // console.log("foundDoctor", foundDoctor);
         
         return foundDoctor;
@@ -95,19 +95,43 @@ export class DoctorRecord implements DoctorRecord {
             login
         })
         const {user_id} = user_idJson[0];
-        
         const [daneZGrafiku] = await pool.execute<RowDataPacket[]>("SELECT * FROM `grafik` WHERE `id_lekarza` = :user_id", {
             user_id
         })
-        
-        console.log("dane z grafku", daneZGrafiku);
+        // console.log("dane z grafku", daneZGrafiku);
         // const {data, od_godziny, do_godziny} = daneZGrafiku[0];
         // const foundSchedule = {data, od_godziny, do_godziny}
-        
         return daneZGrafiku;
     }
 
-    // async update(): Promise<void> {
+    static async getTerm(fromHour: string, toHour: string, date: string, id: string): Promise<Array<Object>>{
+        const [termList] = await pool.execute<RowDataPacket[]>("SELECT * FROM `godziny_wizyt` WHERE `godzina_wizyty` >= :fromHour AND `godzina_wizyty` <= :toHour ;", {
+            fromHour,
+            toHour
+        })
+        termList.forEach(element => {
+            element.data = date;
+            element.id = id;
+        })
+        const result = Object.values(JSON.parse(JSON.stringify(termList)));
+        // console.log("result", result);        
+        
+        return result;
+    }
 
-    // }
+    static async update(id: string, name: string, surname: string, speciality: string, city: string){
+        console.log("dziala", id, name, surname, speciality, city);
+        
+        await pool.execute("UPDATE `dane_logowania` SET `name` = :name , `surname` = :surname WHERE `user_id` = :id",{
+            id,
+            name,
+            surname
+        });
+
+        await pool.execute("UPDATE `lekarze` SET `speciality` = :speciality, `city` = :city WHERE `id_lekarza` = :id", {
+            id,
+            speciality,
+            city
+        })
+    }
 }

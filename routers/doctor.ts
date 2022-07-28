@@ -26,7 +26,7 @@ doctorRouter
     })
 
     .get('/getSchedule/:login', async(req, res) => {
-        console.log("req body", req.body);
+        // console.log("req body", req.body);
         const {body}: {
             body: DoctorRecord
         } = req;
@@ -36,11 +36,29 @@ doctorRouter
         res.json(scheduleData);
     })
 
+    .get('/getHourList/:fromHour/:ToHour/:Date/:id', async(req, res) => {
+        // console.log(req.params.id);
+        
+        const termData = await DoctorRecord.getTerm(req.params.fromHour, req.params.ToHour, req.params.Date, req.params.id)
+
+        res.json(termData);
+    })
+
     .post('/register', async(req, res) => {        
         const newDoctor = new DoctorRecord(req.body as DoctorEntity);
-        console.log(newDoctor);
+        // console.log(newDoctor);
         
         await newDoctor.insert();
 
         res.send(newDoctor);
+    })
+
+    .patch('/update', async(req,res) => {
+        console.log("update");
+        
+        console.log(req.body.name);
+        
+        const updateDoctor = await DoctorRecord.update(req.body.id, req.body.name, req.body.surname, req.body.speciality, req.body.city )
+
+        res.json(updateDoctor);
     })
