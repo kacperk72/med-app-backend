@@ -109,6 +109,19 @@ export class DoctorRecord implements DoctorRecord {
             fromHour,
             toHour
         })
+        const [numberOfTerms] = await pool.execute<RowDataPacket[]>('SELECT COUNT(`godzina_wizyty`) AS "liczba" FROM `godziny_wizyt` WHERE `godzina_wizyty` >= :fromHour AND `godzina_wizyty` <= :toHour;', {
+            fromHour,
+            toHour
+        })
+        console.log(termList);
+        
+        const result2 = Object.values(JSON.parse(JSON.stringify(numberOfTerms)));
+        console.log(result2);
+        
+        // numberOfTerms.forEach(element => {
+        //     console.log("element" ,element[0].constructor.name);
+        // });
+        
         termList.forEach(element => {
             element.data = date;
             element.id = id;
