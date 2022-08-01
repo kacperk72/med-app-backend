@@ -7,6 +7,7 @@ import { handleError } from "./utils/errors";
 import { pacientRouter } from "./routers/pacient";
 import { doctorRouter } from "./routers/doctor";
 import { userRouter } from "./routers/user";
+import { visitRouter } from "./routers/visit";
 
 const app = express();
 
@@ -18,6 +19,7 @@ app.use(express.json()); // Content-type: application/json
 app.use('/pacient', pacientRouter);
 app.use('/doctor', doctorRouter);
 app.use('/user', userRouter);
+app.use('/visit', visitRouter);
 
 app.use(handleError);
 

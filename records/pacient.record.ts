@@ -2,7 +2,7 @@ import { PacientEntity } from "../types/pacient";
 import { ValidationError } from "../utils/errors";
 import {v4 as uuid} from "uuid";
 import { pool } from "../utils/db";
-import { FieldPacket } from "mysql2";
+import { FieldPacket, RowDataPacket } from "mysql2";
 
 type PacientRecordResult = [PacientRecord[], FieldPacket[]];
 
@@ -57,6 +57,26 @@ export class PacientRecord implements PacientEntity {
 
         // return results.map(obj => new PacientRecord(obj));
         return results;
+    }
+
+    static async getUser(login: string): Promise<Object | null>  {
+        // console.log("szukam");
+        const [result] = await pool.execute<RowDataPacket[]>("SELECT `user_id`,`name`,`surname` FROM `dane_logowania` WHERE login = :login", {
+            login
+        })
+        // console.log(result);
+        const{user_id, name, surname} = result[0];
+        const user = {user_id, name, surname}
+
+        return user;
+    }
+
+    static async getVisits(user_id: string): Promise<Object | null> {
+        const [result] = await pool.execute<RowDataPacket[]>("SELECT * FROM `wizyty` WHERE `id_pacjenta` = :user_id", {
+            user_id
+        })
+
+        return result;
     }
 
     // static getOne(id: string): Promise<PacientRecord | null> {

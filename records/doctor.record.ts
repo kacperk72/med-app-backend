@@ -99,28 +99,15 @@ export class DoctorRecord implements DoctorRecord {
             user_id
         })
         // console.log("dane z grafku", daneZGrafiku);
-        // const {data, od_godziny, do_godziny} = daneZGrafiku[0];
-        // const foundSchedule = {data, od_godziny, do_godziny}
+
         return daneZGrafiku;
     }
 
     static async getTerm(fromHour: string, toHour: string, date: string, id: string): Promise<Array<Object>>{
-        const [termList] = await pool.execute<RowDataPacket[]>("SELECT * FROM `godziny_wizyt` WHERE `godzina_wizyty` >= :fromHour AND `godzina_wizyty` <= :toHour ;", {
+        const [termList] = await pool.execute<RowDataPacket[]>("SELECT * FROM `godziny_wizyt` WHERE `godzina_wizyty` >= :fromHour AND `godzina_wizyty` < :toHour ;", {
             fromHour,
             toHour
         })
-        const [numberOfTerms] = await pool.execute<RowDataPacket[]>('SELECT COUNT(`godzina_wizyty`) AS "liczba" FROM `godziny_wizyt` WHERE `godzina_wizyty` >= :fromHour AND `godzina_wizyty` <= :toHour;', {
-            fromHour,
-            toHour
-        })
-        console.log(termList);
-        
-        const result2 = Object.values(JSON.parse(JSON.stringify(numberOfTerms)));
-        console.log(result2);
-        
-        // numberOfTerms.forEach(element => {
-        //     console.log("element" ,element[0].constructor.name);
-        // });
         
         termList.forEach(element => {
             element.data = date;
