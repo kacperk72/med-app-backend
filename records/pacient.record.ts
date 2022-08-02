@@ -79,12 +79,59 @@ export class PacientRecord implements PacientEntity {
         return result;
     }
 
-    // static getOne(id: string): Promise<PacientRecord | null> {
+    static async getName(id_lekarza: string){
+        const [result] = await pool.execute<RowDataPacket[]>("SELECT `name`,`surname` FROM `dane_logowania` WHERE `user_id` = :id_lekarza",{
+            id_lekarza
+        })
 
-    // }
+        const {name, surname} = result[0];
+        const userName = {name, surname};
 
-    // async update(): Promise<void> {
+        return userName;
+    }
 
-    // }
+    static async getSpec(id_lekarza: string){
+        const [result] = await pool.execute<RowDataPacket[]>("SELECT `speciality` FROM `lekarze` WHERE `id_lekarza` = :id_lekarza", {
+            id_lekarza
+        })
 
+        const {speciality} = result[0];
+        const spec = {speciality};
+
+        return spec;
+    }
+
+    static async getDate(id_terminu: string) {
+        const [result] = await pool.execute<RowDataPacket[]>("SELECT `data` FROM `grafik` WHERE `id_terminu` = :id_terminu", {
+            id_terminu
+        })
+
+        const {data} = result[0];
+        const date = {data};
+
+        return date;
+    }
+
+    static async getHour(term_id: string) {
+        const [result] = await pool.execute<RowDataPacket[]>("SELECT `godzina_wizyty` FROM `godziny_wizyt` WHERE `term_id` = :term_id", {
+            term_id
+        })
+
+        const {godzina_wizyty} = result[0];
+        const hour = {godzina_wizyty};
+
+        return hour;
+    }
+
+    static async getCities() {
+        const [result] = await pool.execute("SELECT DISTINCT `city` FROM `lekarze`")
+
+        return result;        
+    }
+
+    static async getSpecialities() {
+        const [result] = await pool.execute("SELECT DISTINCT `speciality` FROM `lekarze`")
+
+        return result;
+    }
 }

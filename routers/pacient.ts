@@ -34,3 +34,37 @@ pacientRouter
         res.json(visits);
     })
 
+    .get('/getVisitData/:id_lekarza/:id_terminu/:term_id', async (req,res) => {
+        const id_lekarza = req.params.id_lekarza;
+        const id_terminu = req.params.id_terminu;
+        const term_id = req.params.term_id;
+
+        const name = await PacientRecord.getName(id_lekarza);
+
+        const spec = await PacientRecord.getSpec(id_lekarza);
+
+        const date = await PacientRecord.getDate(id_terminu);
+
+        const hour = await PacientRecord.getHour(term_id);
+
+        // console.log(name, spec, date, hour);
+
+        const userData = {...name, ...spec, ...date, ...hour}
+
+        // console.log((userData));
+
+        res.json(userData)
+    })
+
+    .get('/getCities', async(req, res) => {
+        const cities = await PacientRecord.getCities();
+
+        res.json(cities);
+    })
+
+    .get('/getSpec', async(req, res) => {
+        const specialities = await PacientRecord.getSpecialities();
+
+        res.json(specialities);
+    })
+
