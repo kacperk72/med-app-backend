@@ -68,3 +68,9 @@ pacientRouter
         res.json(specialities);
     })
 
+    .delete('/cancelVisit/:hour/:user_id', async(req,res) => {
+        const hour = req.params.hour;
+        const user_id = req.params.user_id;
+        await PacientRecord.cancelVisit(hour,user_id);
+    })
+

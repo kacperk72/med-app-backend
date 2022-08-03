@@ -134,4 +134,17 @@ export class PacientRecord implements PacientEntity {
 
         return result;
     }
+
+    static async cancelVisit(hour: string, user_id: string) {
+        const [term] = await pool.execute<RowDataPacket[]>("SELECT `term_id` FROM `godziny_wizyt` WHERE `godzina_wizyty` = :hour", {
+            hour
+        })
+        const {term_id} = term[0];
+        const term_ID = {term_id}
+
+        await pool.execute("DELETE FROM `wizyty` WHERE `id_pacjenta` = :user_id AND `term_id` = :term_ID",{ 
+            user_id,
+            term_ID: term_ID.term_id
+        })
+    }
 }

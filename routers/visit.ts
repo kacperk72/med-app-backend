@@ -11,3 +11,12 @@ visitRouter
         await newVisit.insert(req.body);
         res.send("dodano rezerwację");
     })
+    .get('/check/:data/:godzina/:id_lek', async (req, res) => {
+        const data = req.params.data;
+        const godzina = req.params.godzina;
+        const id_lek = req.params.id_lek;
+
+        const visit = await VisitRecord.checkVisit(data, godzina, id_lek);
+
+        res.send(visit);
+    })

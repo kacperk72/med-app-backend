@@ -49,4 +49,15 @@ export class VisitRecord implements VisitRecord {
         
         return "dodano rezerwację";
     }
+
+    static async checkVisit(data: string, godzina: string, id_lek: string) {
+        const [result] = await pool.execute<RowDataPacket[]>("SELECT CASE WHEN EXISTS (SELECT * FROM `wizyty` WHERE `id_lekarza` = :id_lek AND `term_id` = :godzina )THEN 'TRUE' ELSE 'FALSE' END AS `wynik`", {
+            id_lek,
+            godzina
+        })
+        const {wynik} = result[0];
+        const wynikBool = {wynik};
+
+        return wynikBool;
+    }
 }
