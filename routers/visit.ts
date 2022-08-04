@@ -9,7 +9,8 @@ visitRouter
         const newVisit = new VisitRecord(req.body as VisitEntity)
         // console.log(req.body);
         await newVisit.insert(req.body);
-        res.send("dodano rezerwację");
+        
+        res.send(newVisit);
     })
     .get('/check/:data/:godzina/:id_lek', async (req, res) => {
         const data = req.params.data;

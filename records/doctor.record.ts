@@ -134,4 +134,34 @@ export class DoctorRecord implements DoctorRecord {
             city
         })
     }
+
+    static async delete(id: string) {
+        await pool.execute("DELETE FROM `wizyty` WHERE `id_lekarza` = :id", {
+            id
+        })
+
+        await pool.execute("DELETE FROM `grafik` WHERE `id_lekarza` = :id", {
+            id
+        })
+
+        await pool.execute("DELETE FROM `lekarze` WHERE `id_lekarza` = :id", {
+            id
+        })
+
+        await pool.execute("DELETE FROM `dane_logowania` WHERE `user_id` = :id",{
+            id
+        })
+    }
+
+    static async addTerm(id: string, date: string, timeFrom: string, timeTo: string){
+        let id_terminu = uuid();
+
+        await pool.execute("INSERT INTO `grafik` (`id_terminu`,`id_lekarza`,`data`,`od_godziny`,`do_godziny`) VALUES(:id_terminu, :id, :date, :timeFrom, :timeTo)", {
+            id_terminu,
+            id,
+            date,
+            timeFrom,
+            timeTo
+        })
+    }   
 }

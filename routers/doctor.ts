@@ -53,12 +53,24 @@ doctorRouter
         res.send(newDoctor);
     })
 
+    .post('/addTerm', async(req, res) => {
+        await DoctorRecord.addTerm(req.body.id, req.body.date, req.body.timeFrom, req.body.timeTo);
+
+        res.send("dodano termin");
+    })
+
     .patch('/update', async(req,res) => {
         console.log("update");
-        
-        console.log(req.body.name);
+        // console.log(req.body.name);
         
         const updateDoctor = await DoctorRecord.update(req.body.id, req.body.name, req.body.surname, req.body.speciality, req.body.city )
 
         res.json(updateDoctor);
+    })
+
+    .delete('/delete/:doctorId', async(req,res) => {
+        const doctorId = req.params.doctorId;
+        console.log("usuwanie", doctorId);
+
+        await DoctorRecord.delete(doctorId);
     })
