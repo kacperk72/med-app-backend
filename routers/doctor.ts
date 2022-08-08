@@ -36,12 +36,33 @@ doctorRouter
         res.json(scheduleData);
     })
 
-    .get('/getHourList/:fromHour/:ToHour/:Date/:id', async(req, res) => {
+    .get('/getHourList/:fromHour/:ToHour/:Date/:id/:id_terminu', async(req, res) => {
         // console.log(req.params.id);
         
-        const termData = await DoctorRecord.getTerm(req.params.fromHour, req.params.ToHour, req.params.Date, req.params.id)
+        const termData = await DoctorRecord.getTerm(req.params.fromHour, req.params.ToHour, req.params.Date, req.params.id, req.params.id_terminu)
 
         res.json(termData);
+    })
+
+    .get('/getBookedTerms/:id_lek', async(req, res) => {
+        const bookedTermsData = await DoctorRecord.getBookedTerms(req.params.id_lek);
+        
+        res.json(bookedTermsData);
+    })
+
+    .get('/getHourFromTerm/:term_id', async(req, res) => {
+        const term_id = await DoctorRecord.getTermHour(req.params.term_id)
+        res.json(term_id);
+    })
+
+    .get('/getOnePacient/:id_pacjenta', async(req, res) => {
+        const user = await DoctorRecord.getOnePacient(req.params.id_pacjenta)
+        res.json(user);
+    })
+
+    .get('/getDateFromTerm/:id_terminu', async(req, res) => {
+        const date = await DoctorRecord.getDateFromTerm(req.params.id_terminu)
+        res.json(date);
     })
 
     .post('/register', async(req, res) => {        

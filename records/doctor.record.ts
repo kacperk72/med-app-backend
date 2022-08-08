@@ -6,6 +6,14 @@ import { FieldPacket, RowDataPacket } from "mysql2";
 
 type DoctorRecordResult = [DoctorRecord[], FieldPacket[]];
 
+export interface resultElement {
+    term_id: number;
+    godzina_wizyty: string;
+    data: string;
+    id: string;
+    id_terminu: string;
+}
+
 // export type DoctorRecordToEdit = Omit<DoctorRecord, 'id'|'login'|'password'|'role'>;
 //
 // type DoctorRecordResults = [DoctorRecordToEdit[], RowDataPacket[]];
@@ -36,7 +44,7 @@ export class DoctorRecord implements DoctorRecord {
     }
 
     static async listAll(): Promise<DoctorRecord[]> {
-        const [results] = (await pool.execute("SELECT * FROM `lekarze` LEFT JOIN `dane_logowania` ON lekarze.id_lekarza = dane_logowania.user_id;")) as DoctorRecordResult;
+        const [results] = (await pool.execute("SELECT * FROM `lekarze` LEFT JOIN `dane_logowania` ON lekarze.id_lekarza = dane_logowania.user_id ORDER BY `surname`;")) as DoctorRecordResult;
 
         return results;
     }
@@ -103,24 +111,50 @@ export class DoctorRecord implements DoctorRecord {
         return daneZGrafiku;
     }
 
-    static async getTerm(fromHour: string, toHour: string, date: string, id: string): Promise<Array<Object>>{
+    static async getTerm(fromHour: string, toHour: string, date: string, id: string, id_terminu: string): Promise<Array<Object>>{
         const [termList] = await pool.execute<RowDataPacket[]>("SELECT * FROM `godziny_wizyt` WHERE `godzina_wizyty` >= :fromHour AND `godzina_wizyty` < :toHour ;", {
             fromHour,
             toHour
         })
-        
+
         termList.forEach(element => {
             element.data = date;
             element.id = id;
+            element.id_terminu = id_terminu;
         })
-        const result = Object.values(JSON.parse(JSON.stringify(termList)));
-        // console.log("result", result);        
+        const result: Array<resultElement> = Object.values(JSON.parse(JSON.stringify(termList)));
+        // console.log("result", result);  // wszystkie wizyty
         
-        return result;
+        const [bookedTerms] = await pool.execute<RowDataPacket[]>("SELECT * FROM `wizyty` WHERE id_lekarza = :id", {
+            id
+        })
+
+        // console.log("bookedTerms", bookedTerms); // zarezewowane wizyty
+        let resultWithoutBooked = result;
+        //usuwanie zajętych
+        for(let i=0;i<result.length;i++){
+            for(let j=0;j<bookedTerms.length;j++){
+                if(result[i].id_terminu == bookedTerms[j].id_terminu){
+                    if(result[i].id == bookedTerms[j].id_lekarza){
+                        if(result[i].term_id == bookedTerms[j].term_id){
+                            // console.log("mam cie");
+                            // console.log("git", result[i]);
+                            console.log("do usuniecia", result[i]);
+                            // resultWithoutBooked.splice(i,i+1)
+                        }
+                    }
+                }
+            }
+        }
+
+        console.log("zwracane wizyty", resultWithoutBooked);  // wszystkie wizyty
+
+        
+        return resultWithoutBooked;
     }
 
     static async update(id: string, name: string, surname: string, speciality: string, city: string){
-        console.log("dziala", id, name, surname, speciality, city);
+        // console.log("dziala", id, name, surname, speciality, city);
         
         await pool.execute("UPDATE `dane_logowania` SET `name` = :name , `surname` = :surname WHERE `user_id` = :id",{
             id,
@@ -163,5 +197,33 @@ export class DoctorRecord implements DoctorRecord {
             timeFrom,
             timeTo
         })
-    }   
+    }  
+    
+    static async getBookedTerms(id_lek: string) {
+        const [bookedTerms] =  await pool.execute<RowDataPacket[]>("SELECT * FROM `wizyty` WHERE `id_lekarza` = :id_lek", {
+            id_lek
+        })
+        return bookedTerms;
+    }
+
+    static async getTermHour(term_id: string){
+        const [term_ID] = await pool.execute<RowDataPacket[]>("SELECT `godzina_wizyty` FROM `godziny_wizyt` WHERE `term_id` = :term_id", {
+            term_id
+        })
+        return term_ID[0];
+    }
+
+    static async getOnePacient(id_pacjenta: string){
+        const [user] = await pool.execute<RowDataPacket[]>("SELECT `name`,`surname` FROM `dane_logowania` WHERE `user_id` = :id_pacjenta", {
+            id_pacjenta
+        })
+        return user[0];
+    }
+    
+    static async getDateFromTerm(id_terminu: string){
+        const [date] = await pool.execute<RowDataPacket[]>("SELECT `data` FROM `grafik` WHERE `id_terminu` = :id_terminu", {
+            id_terminu
+        });
+        return date[0];
+    }
 }
