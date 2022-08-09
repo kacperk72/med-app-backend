@@ -45,6 +45,7 @@ doctorRouter
     })
 
     .get('/getBookedTerms/:id_lek', async(req, res) => {
+        
         const bookedTermsData = await DoctorRecord.getBookedTerms(req.params.id_lek);
         
         res.json(bookedTermsData);

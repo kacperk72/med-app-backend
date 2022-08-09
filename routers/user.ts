@@ -36,7 +36,7 @@ userRouter
     .post('/register', async (req, res) => {     
         const newUser = new UserRecord(req.body as UserEntity);
         const userAlreadyExsist = await newUser.checkIfExsists();
-        console.log(userAlreadyExsist.length);
+        // console.log(userAlreadyExsist.length);
         
         if(userAlreadyExsist.length != 0){
             console.log("User already exsist, can not create");

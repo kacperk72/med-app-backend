@@ -140,17 +140,22 @@ export class DoctorRecord implements DoctorRecord {
                             // console.log("mam cie");
                             // console.log("git", result[i]);
                             console.log("do usuniecia", result[i]);
-                            // resultWithoutBooked.splice(i,i+1)
+                            resultWithoutBooked.splice(i,1)
+                            // resultWithoutBooked.push(result[i]);
+                            // result.filter(item => item != result[i]);
+
                         }
                     }
                 }
             }
         }
 
-        console.log("zwracane wizyty", resultWithoutBooked);  // wszystkie wizyty
+        // result.filter(item => !resultWithoutBooked.includes(item));
+
+        console.log("zwracane wizyty", result);  // wszystkie wizyty
 
         
-        return resultWithoutBooked;
+        return result;
     }
 
     static async update(id: string, name: string, surname: string, speciality: string, city: string){

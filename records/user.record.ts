@@ -52,6 +52,10 @@ export class UserRecord implements UserEntity {
             password: this.password,
             role: this.role
         })
+
+        await pool.execute("INSERT INTO `pacjenci`(`id_pacjenta`,`age`) VALUES (:id, 18)",{
+            id: this.id,
+        })
         return this.id;
     }
 
