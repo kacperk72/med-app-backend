@@ -25,14 +25,6 @@ export class VisitRecord implements VisitRecord {
             id_lekarza: termData.id
         })
         const {id_terminu} = id_terminuJSON[0];
-        // console.log("id_terminu", id_terminu);
-
-        //1 - id_wizyty - uuid()
-        //2 - id_lekarza - termData.id
-        //3 - id_pacjenta - zapytanie z bazy za pomocą loginu
-        //4 - id_terminu - można tez wyciagnac z bazy przez date i id lekarza
-        //5 - term_id - termData.term_id
-        //6 - reason_of_visit - termData.reason
 
         if(!termData.id_wizyty) {
             termData.id_wizyty = uuid();

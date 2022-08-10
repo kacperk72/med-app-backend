@@ -123,13 +123,11 @@ export class DoctorRecord implements DoctorRecord {
             element.id_terminu = id_terminu;
         })
         const result: Array<resultElement> = Object.values(JSON.parse(JSON.stringify(termList)));
-        // console.log("result", result);  // wszystkie wizyty
         
         const [bookedTerms] = await pool.execute<RowDataPacket[]>("SELECT * FROM `wizyty` WHERE id_lekarza = :id", {
             id
         })
 
-        // console.log("bookedTerms", bookedTerms); // zarezewowane wizyty
         let resultWithoutBooked = result;
         //usuwanie zajętych
         for(let i=0;i<result.length;i++){
@@ -137,24 +135,12 @@ export class DoctorRecord implements DoctorRecord {
                 if(result[i].id_terminu == bookedTerms[j].id_terminu){
                     if(result[i].id == bookedTerms[j].id_lekarza){
                         if(result[i].term_id == bookedTerms[j].term_id){
-                            // console.log("mam cie");
-                            // console.log("git", result[i]);
-                            console.log("do usuniecia", result[i]);
                             resultWithoutBooked.splice(i,1)
-                            // resultWithoutBooked.push(result[i]);
-                            // result.filter(item => item != result[i]);
-
                         }
                     }
                 }
             }
         }
-
-        // result.filter(item => !resultWithoutBooked.includes(item));
-
-        console.log("zwracane wizyty", result);  // wszystkie wizyty
-
-        
         return result;
     }
 
@@ -172,6 +158,31 @@ export class DoctorRecord implements DoctorRecord {
             speciality,
             city
         })
+    }
+
+    static async updateTerm(id_terminu: string, timeF: number, timeT: number){
+        console.log("update wizyty ", id_terminu);
+        // console.log(id_terminu, timeF, timeT);
+        let timeFrom;
+        let timeTo;
+        if(timeF <= 9){
+            timeFrom = "0"+timeF+":00"
+        }else{
+            timeFrom = timeF+":00"
+        }
+        if(timeT <= 9){
+            timeTo = "0"+timeT+":00"
+        }else{
+            timeTo = timeT+":00"
+        }
+
+        await pool.execute("UPDATE `grafik` SET `od_godziny` = :timeFrom, `do_godziny` = :timeTo WHERE `id_terminu` = :id_terminu",{
+            timeFrom,
+            timeTo,
+            id_terminu
+        })
+
+
     }
 
     static async delete(id: string) {
@@ -208,6 +219,8 @@ export class DoctorRecord implements DoctorRecord {
         const [bookedTerms] =  await pool.execute<RowDataPacket[]>("SELECT * FROM `wizyty` WHERE `id_lekarza` = :id_lek", {
             id_lek
         })
+        // console.log(bookedTerms);
+        
         return bookedTerms;
     }
 
@@ -230,5 +243,23 @@ export class DoctorRecord implements DoctorRecord {
             id_terminu
         });
         return date[0];
+    }
+
+    static async cancelVisit(id_wizyty: string) {
+        await pool.execute("DELETE FROM `wizyty` WHERE `id_wizyty` = :id_wizyty", {
+            id_wizyty
+        })
+    }
+
+    static async deleteTerm(id_terminu: string) {
+        await pool.execute("SET FOREIGN_KEY_CHECKS=0")
+        await pool.query("DELETE FROM `wizyty` WHERE `id_terminu` = :id_terminu", {
+            id_terminu
+        })
+        await pool.query("DELETE FROM `grafik` WHERE `id_terminu` = :id_terminu", {
+            id_terminu
+        })
+        await pool.query("SET FOREIGN_KEY_CHECKS=1")
+
     }
 }

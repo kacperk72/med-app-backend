@@ -45,7 +45,7 @@ doctorRouter
     })
 
     .get('/getBookedTerms/:id_lek', async(req, res) => {
-        
+
         const bookedTermsData = await DoctorRecord.getBookedTerms(req.params.id_lek);
         
         res.json(bookedTermsData);
@@ -76,9 +76,9 @@ doctorRouter
     })
 
     .post('/addTerm', async(req, res) => {
-        await DoctorRecord.addTerm(req.body.id, req.body.date, req.body.timeFrom, req.body.timeTo);
+        const newTerm = await DoctorRecord.addTerm(req.body.id, req.body.date, req.body.timeFrom, req.body.timeTo);
 
-        res.send("dodano termin");
+        res.json(newTerm);
     })
 
     .patch('/update', async(req,res) => {
@@ -90,9 +90,20 @@ doctorRouter
         res.json(updateDoctor);
     })
 
-    .delete('/delete/:doctorId', async(req,res) => {
-        const doctorId = req.params.doctorId;
-        console.log("usuwanie", doctorId);
+    .patch('/updateTerm', async(req, res) => {
+        const updateTerm = await DoctorRecord.updateTerm(req.body.id_terminu, req.body.timeF, req.body.timeT)
 
-        await DoctorRecord.delete(doctorId);
+        res.json(updateTerm);
+    })
+
+    .delete('/delete/:doctorId', async(req,res) => {
+        await DoctorRecord.delete(req.params.doctorId);
+    })
+
+    .delete('/cancelVisit/:id_wizyty', async(req, res) => {
+        await DoctorRecord.cancelVisit(req.params.id_wizyty)
+    })
+
+    .delete('/deleteTerm/:id_terminu', async(req, res) => {
+        await DoctorRecord.deleteTerm(req.params.id_terminu);
     })
