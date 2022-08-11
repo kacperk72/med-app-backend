@@ -18,7 +18,7 @@ export class VisitRecord implements VisitRecord {
             login: termData.login
         })
         const {user_id} = id_pacjentaJSON[0];
-        console.log("id_pacjenta", user_id);
+        // console.log("id_pacjenta", user_id);
 
         const [id_terminuJSON] = await pool.execute<RowDataPacket[]>("SELECT `id_terminu` FROM `grafik` WHERE `data` = :data AND `id_lekarza` = :id_lekarza",{
             data: termData.data + ' 02:00:00',
@@ -30,8 +30,7 @@ export class VisitRecord implements VisitRecord {
             termData.id_wizyty = uuid();
         }
 
-        console.log(termData);
-        
+        // console.log(termData);
 
         await pool.execute("INSERT INTO `wizyty` (`id_wizyty`,`id_lekarza`,`id_pacjenta`,`id_terminu`,`term_id`,`reason_of_visit`) VALUES(:id_wizyty, :id_lekarza, :id_pacjenta, :id_terminu, :term_id, :reason_of_visit)", {
             id_wizyty: termData.id_wizyty,

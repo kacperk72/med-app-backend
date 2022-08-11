@@ -42,7 +42,7 @@ export class UserRecord implements UserEntity {
         if(!this.id) {
             this.id = uuid();
         }
-        console.log(this.id, this.name, this.surname, this.login, this.password, this.role);
+        // console.log(this.id, this.name, this.surname, this.login, this.password, this.role);
         
         await pool.execute("INSERT INTO `dane_logowania`(`user_id`, `name`,`surname`,`login`,`password`,`role`) VALUES (:id, :name, :surname, :login, :password, :role);",{
             id: this.id,
