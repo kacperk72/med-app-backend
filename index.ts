@@ -14,14 +14,15 @@ const app = express();
 // app.use(cors({
 //     origin: 'http://localhost:4200',
 // }));
+app.get('/', (req, res) => {
+    res.send("Hello world")
+})
+
 app.use(cors({
     origin: 'https://med-app-frontend-angular.herokuapp.com',
 }));
 app.use(express.json()); // Content-type: application/json
 
-app.get('/', (req, res) => {
-    res.send("Hello world")
-})
 
 app.use('/pacient', pacientRouter);
 app.use('/doctor', doctorRouter);
