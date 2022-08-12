@@ -6,7 +6,7 @@
   "scripts": {
     "start": "ts-node index.ts",
     "start:dev": "tsnd index.ts",
-    "heroku-postbuild": "ts-node index.ts"
+    "heroku-postbuild": "node index.ts"
   },
   "keywords": [],
   "author": "",
