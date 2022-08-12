@@ -5,7 +5,8 @@
   "main": "index.ts",
   "scripts": {
     "start": "ts-node index.ts",
-    "start:dev": "tsnd index.ts"
+    "start:dev": "tsnd index.ts",
+    "heroku-postbuild": "ts-node index.ts"
   },
   "keywords": [],
   "author": "",
@@ -29,5 +30,9 @@
     "ts-node": "^10.4.0",
     "ts-node-dev": "^2.0.0",
     "typescript": "^4.5.5"
+  },
+  "engines": {
+    "npm": "8.12.1",
+    "node": "18.4.0"
   }
 }
