@@ -19,6 +19,10 @@ app.use(cors({
 }));
 app.use(express.json()); // Content-type: application/json
 
+app.get('/', (req, res) => {
+    res.send("Hello world")
+})
+
 app.use('/pacient', pacientRouter);
 app.use('/doctor', doctorRouter);
 app.use('/user', userRouter);
