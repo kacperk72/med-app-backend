@@ -4,11 +4,10 @@
   "description": "",
   "main": "index.ts",
   "scripts": {
-    "start": "node dist/index.js",
+    "start": "ts-node index.ts",
+    "start:dev": "tsnd index.ts",
     "postinstall": "tsc",
-    "watch-node": "nodemon dist/index.js",
-    "watch-ts": "tsc -w",
-    "deploy": "git add . && git commit -m Heroku && git push heroku master"
+    "heroku-postbuild": "tsnd index.ts"
   },
   "keywords": [],
   "author": "",
@@ -21,7 +20,6 @@
     "jsonwebtoken": "^8.5.1",
     "method-override": "^3.0.0",
     "mysql2": "^2.3.3",
-    "tsc": "^2.0.4",
     "uuid": "^8.3.2"
   },
   "devDependencies": {
