@@ -8,3 +8,14 @@ export interface DoctorEntity {
     speciality: string;
     city: string;
 }
+
+export interface DoctorEntityDTO {
+    id: string;
+    login: string;
+    password: string;
+    role: string;
+    name: string;
+    surname: string;
+    speciality: string[];
+    city: string;
+}

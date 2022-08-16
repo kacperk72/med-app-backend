@@ -8,7 +8,6 @@ export const doctorRouter = Router();
 doctorRouter
     .get('/', async(req, res) => {
         const doctorList = await DoctorRecord.listAll();
-        // console.log(doctorList);
         res.send(doctorList);
     })
 
@@ -19,8 +18,6 @@ doctorRouter
         } = req;
 
         const doctorData = await DoctorRecord.getOne(req.params.login);
-
-        // console.log("doctorData", doctorData)
 
         res.json(doctorData);
     })

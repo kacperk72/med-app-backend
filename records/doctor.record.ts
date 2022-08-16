@@ -1,4 +1,4 @@
-import { DoctorEntity } from "../types";
+import { DoctorEntity, DoctorEntityDTO } from "../types";
 import { ValidationError } from "../utils/errors";
 import {v4 as uuid} from "uuid";
 import { pool } from "../utils/db";
@@ -43,10 +43,9 @@ export class DoctorRecord implements DoctorRecord {
         this.city = obj.city;
     }
 
-    static async listAll(): Promise<DoctorRecord[]> {
+    static async listAll(): Promise<DoctorEntityDTO[]> {
         const [results] = (await pool.execute("SELECT * FROM `lekarze` LEFT JOIN `dane_logowania` ON lekarze.id_lekarza = dane_logowania.user_id ORDER BY `surname`;")) as DoctorRecordResult;
-
-        return results;
+        return results.map(el => ({...el, speciality: el.speciality.split(', ')}))
     }
 
     async insert(): Promise<string> {

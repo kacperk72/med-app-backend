@@ -1,0 +1,204 @@
+{
+    "root": true,
+    "ignorePatterns": ["projects/**/*"],
+    "overrides": [
+        {
+            "files": ["*.ts", "*.js"],
+            "parserOptions": {
+                "project": ["tsconfig.json", "e2e/tsconfig.json"],
+                "createDefaultProgram": true
+            },
+            "extends": [
+                "plugin:@angular-eslint/ng-cli-compat",
+                "plugin:@angular-eslint/ng-cli-compat--formatting-add-on",
+                "plugin:@angular-eslint/template/process-inline-templates",
+                "plugin:cypress/recommended",
+                "plugin:chai-friendly/recommended"
+            ],
+            "plugins": ["cypress", "chai-friendly"],
+            "rules": {
+                "@angular-eslint/component-class-suffix": "warn",
+                "@angular-eslint/component-selector": [
+                    "error",
+                    {
+                        "type": "element",
+                        "prefix": ["mn"],
+                        "style": "kebab-case"
+                    }
+                ],
+                "@angular-eslint/directive-class-suffix": "warn",
+                "@angular-eslint/directive-selector": [
+                    "error",
+                    {
+                        "type": "attribute",
+                        "prefix": ["mn"],
+                        "style": "camelCase"
+                    }
+                ],
+                "@angular-eslint/contextual-lifecycle": "warn",
+                "@angular-eslint/no-conflicting-lifecycle": "warn",
+                "@angular-eslint/no-host-metadata-property": "warn",
+                "@angular-eslint/no-input-rename": "warn",
+                "@angular-eslint/no-inputs-metadata-property": "warn",
+                "@angular-eslint/no-output-rename": "warn",
+                "@angular-eslint/no-output-native": "warn",
+                "@angular-eslint/no-output-on-prefix": "warn",
+                "@angular-eslint/no-outputs-metadata-property": "warn",
+                "@angular-eslint/use-lifecycle-interface": "warn",
+                "@angular-eslint/use-pipe-transform-interface": "warn",
+
+                "@typescript-eslint/dot-notation": "off",
+                "@typescript-eslint/no-inferrable-types": [
+                    "warn",
+                    {
+                        "ignoreParameters": false,
+                        "ignoreProperties": false
+                    }
+                ],
+                "@typescript-eslint/naming-convention": [
+                    "warn",
+                    {
+                        "selector": "default",
+                        "format": ["camelCase"],
+                        "leadingUnderscore": "allow",
+                        "trailingUnderscore": "allow"
+                    },
+                    {
+                        "selector": ["enum", "enumMember", "objectLiteralProperty", "typeProperty", "typeAlias"],
+                        "format": ["camelCase", "PascalCase", "UPPER_CASE"],
+                        "leadingUnderscore": "allow",
+                        "trailingUnderscore": "allow"
+                    },
+                    {
+                        "selector": "variable",
+                        "format": ["camelCase", "PascalCase", "UPPER_CASE"],
+                        "leadingUnderscore": "allow",
+                        "trailingUnderscore": "allow",
+                        "modifiers": ["const", "global", "exported"]
+                    },
+                    {
+                        "selector": "variable",
+                        "format": ["camelCase", "PascalCase", "UPPER_CASE"],
+                        "leadingUnderscore": "allow",
+                        "trailingUnderscore": "allow",
+                        "modifiers": ["const"]
+                    },
+                    {
+                        "selector": "classProperty",
+                        "format": ["camelCase", "PascalCase", "UPPER_CASE"],
+                        "leadingUnderscore": "allow",
+                        "trailingUnderscore": "allow",
+                        "modifiers": ["readonly"]
+                    },
+                    {
+                        "selector": ["class", "interface", "enum", "typeParameter"],
+                        "format": ["PascalCase", "StrictPascalCase"]
+                    }
+                ],
+                "@typescript-eslint/member-ordering": [
+                    "warn",
+                    {
+                        "default": [
+                            "static-field",
+                            "abstract-field",
+                            "decorated-field",
+                            "instance-field",
+
+                            "public-field",
+                            "protected-field",
+                            "private-field",
+
+                            "field",
+
+                            "signature",
+
+                            "constructor",
+
+                            "static-method",
+                            "abstract-method",
+                            "decorated-method",
+                            "instance-method",
+
+                            "public-method",
+                            "protected-method",
+                            "private-method",
+
+                            "method"
+                        ]
+                    }
+                ],
+                "@typescript-eslint/no-unused-expressions": "warn",
+                "@typescript-eslint/no-non-null-assertion": "warn",
+                "@typescript-eslint/no-var-requires": "warn",
+                "@typescript-eslint/quotes": "warn",
+                "@typescript-eslint/semi": "warn",
+                "@typescript-eslint/array-type": "warn",
+                "@typescript-eslint/explicit-function-return-type": [
+                    "warn",
+                    {
+                        "allowExpressions": true,
+                        "allowTypedFunctionExpressions": true,
+                        "allowHigherOrderFunctions": true,
+                        "allowDirectConstAssertionInArrowFunctions": true,
+                        "allowConciseArrowFunctionExpressionsStartingWithVoid": false
+                    }
+                ],
+                "@typescript-eslint/member-delimiter-style": "warn",
+                "@typescript-eslint/prefer-for-of": "warn",
+
+                "curly": "warn",
+                "indent": ["warn", 4, { "ignoredNodes": ["ConditionalExpression *"], "SwitchCase": 1 }],
+                "max-len": [
+                    "warn",
+                    {
+                        "code": 180
+                    }
+                ],
+                "no-console": ["warn", { "allow": ["info", "warn", "error"] }],
+                "no-empty": "off",
+                "no-underscore-dangle": "off",
+                "no-bitwise": "warn",
+                "object-shorthand": "off",
+                "space-before-function-paren": [
+                    "warn",
+                    {
+                        "anonymous": "always",
+                        "named": "ignore",
+                        "asyncArrow": "always"
+                    }
+                ],
+                "prefer-arrow/prefer-arrow-functions": [
+                    "warn",
+                    {
+                        "disallowPrototype": true,
+                        "singleReturnOnly": false,
+                        "classPropertiesAllowed": false,
+                        "allowStandaloneDeclarations": true
+                    }
+                ],
+                "arrow-body-style": "off", // ["warn", "as-needed"]
+                "no-trailing-spaces": "warn",
+                "id-blacklist": "warn",
+                "no-unused-vars": ["warn", { "vars": "all", "args": "none", "ignoreRestSiblings": false }],
+                "no-debugger": "warn",
+
+                // cypress
+                "cypress/no-assigning-return-values": "error",
+                "cypress/no-unnecessary-waiting": "error",
+                "cypress/assertion-before-screenshot": "warn",
+                "cypress/no-force": "warn",
+                "cypress/no-async-tests": "error",
+                "cypress/no-pause": "error",
+
+                // chai-friendly
+                "no-unused-expressions": 0,
+                "chai-friendly/no-unused-expressions": 2
+            }
+        },
+        {
+            "files": ["*.html"],
+            "extends": ["plugin:@angular-eslint/template/recommended"],
+            "rules": {}
+        }
+    ]
+}
