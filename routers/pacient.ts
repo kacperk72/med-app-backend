@@ -1,76 +1,77 @@
-import { Router } from "express";
-import { PacientRecord } from "../records/pacient.record";
-import { PacientEntity } from "../types/pacient";
+import { Router } from 'express';
+import { PacientRecord } from '../records/pacient.record';
+import { PacientEntity } from '../types/pacient';
 
 export const pacientRouter = Router();
 
 pacientRouter
-    .get('/', async(req, res) => {
-        const pacientList = await PacientRecord.listAll();
+  .get('/', async (req, res) => {
+    const pacientList = await PacientRecord.listAll();
 
-        res.json(pacientList);
-    })
+    res.json(pacientList);
+  })
 
-    .post('/', async (req, res) => {
-        const newPacient = new PacientRecord(req.body as PacientEntity);
-        await newPacient.insert();
+  .post('/', async (req, res) => {
+    const newPacient = new PacientRecord(req.body as PacientEntity);
+    await newPacient.insert();
 
-        res.send(newPacient);
-    })
-    
-    .get('/getUser/:login', async (req, res) => {
-        const login = req.params.login;
+    res.send(newPacient);
+  })
 
-        const user = await PacientRecord.getUser(login);
+  .get('/getUser/:login', async (req, res) => {
+    const login = req.params.login;
 
-        res.json(user);
-    })
+    const user = await PacientRecord.getUser(login);
 
-    .get('/getVisits/:user_id', async (req, res) => {
-        const user_id = req.params.user_id;
+    res.json(user);
+  })
 
-        const visits = await PacientRecord.getVisits(user_id);
+  .get('/getVisits/:user_id', async (req, res) => {
+    const user_id = req.params.user_id;
 
-        res.json(visits);
-    })
+    const visits = await PacientRecord.getVisits(user_id);
 
-    .get('/getVisitData/:id_lekarza/:id_terminu/:term_id', async (req,res) => {
-        const id_lekarza = req.params.id_lekarza;
-        const id_terminu = req.params.id_terminu;
-        const term_id = req.params.term_id;
+    res.json(visits);
+  })
 
-        const name = await PacientRecord.getName(id_lekarza);
+  .get('/getVisitData/:id_lekarza/:id_terminu/:term_id', async (req, res) => {
+    const id_lekarza = req.params.id_lekarza;
+    const id_terminu = req.params.id_terminu;
+    const term_id = req.params.term_id;
 
-        const spec = await PacientRecord.getSpec(id_lekarza);
+    const name = await PacientRecord.getName(id_lekarza);
 
-        const date = await PacientRecord.getDate(id_terminu);
+    const spec = await PacientRecord.getSpec(id_lekarza);
 
-        const hour = await PacientRecord.getHour(term_id);
+    const date = await PacientRecord.getDate(id_terminu);
 
-        // console.log(name, spec, date, hour);
+    const hour = await PacientRecord.getHour(term_id);
 
-        const userData = {...name, ...spec, ...date, ...hour}
+    // console.log(name, spec, date, hour);
 
-        // console.log((userData));
+    const userData = { ...name, ...spec, ...date, ...hour };
 
-        res.json(userData)
-    })
+    // console.log((userData));
 
-    .get('/getCities', async(req, res) => {
-        const cities = await PacientRecord.getCities();
+    res.json(userData);
+  })
 
-        res.json(cities);
-    })
+  .get('/getCities', async (req, res) => {
+    const cities = await PacientRecord.getCities();
 
-    .get('/getSpec', async(req, res) => {
-        const specialities = await PacientRecord.getSpecialities();
+    // console.log(cities);
 
-        res.json(specialities);
-    })
+    res.json(cities);
+  })
 
-    .delete('/cancelVisit/:hour/:user_id', async(req,res) => {
-        const hour = req.params.hour;
-        const user_id = req.params.user_id;
-        await PacientRecord.cancelVisit(hour,user_id);
-    })
+  .get('/getSpec', async (req, res) => {
+    const specialities = await PacientRecord.getSpecialities();
 
+    res.json(specialities);
+  })
+
+  .delete('/cancelVisit/:hour/:user_id', async (req, res) => {
+    const hour = req.params.hour;
+    const user_id = req.params.user_id;
+    await PacientRecord.cancelVisit(hour, user_id);
+  });

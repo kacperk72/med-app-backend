@@ -28,7 +28,7 @@ userRouter
             })
             .catch(e => {
                 res.status(500).json({                    
-                    error: e
+                    error: 'nieudana próba logowania'
                 })
             })
         

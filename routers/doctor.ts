@@ -1,106 +1,128 @@
-import { Router } from "express";
-import { resolve } from "path";
-import { DoctorRecord } from "../records/doctor.record";
-import { DoctorEntity } from "../types";
+import { Router } from 'express';
+import { resolve } from 'path';
+import { DoctorRecord } from '../records/doctor.record';
+import { DoctorEntity } from '../types';
 
 export const doctorRouter = Router();
 
 doctorRouter
-    .get('/', async(req, res) => {
-        const doctorList = await DoctorRecord.listAll();
-        res.send(doctorList);
-    })
+  .get('/', async (req, res) => {
+    const doctorList = await DoctorRecord.listAll();
+    res.send(doctorList);
+  })
 
-    .get('/getOne/:login', async(req, res) => {
-        // console.log("req body", req.body);
-        const {body}: {
-            body: DoctorRecord
-        } = req;
+  .get('/getOne/:login', async (req, res) => {
+    // console.log("req body", req.body);
+    const {
+      body,
+    }: {
+      body: DoctorRecord;
+    } = req;
 
-        const doctorData = await DoctorRecord.getOne(req.params.login);
+    const doctorData = await DoctorRecord.getOne(req.params.login);
 
-        res.json(doctorData);
-    })
+    console.log(doctorData);
 
-    .get('/getSchedule/:login', async(req, res) => {
-        // console.log("req body", req.body);
-        const {body}: {
-            body: DoctorRecord
-        } = req;
+    res.json(doctorData);
+  })
 
-        const scheduleData = await DoctorRecord.getSchedule(req.params.login);
+  .get('/getSchedule/:login', async (req, res) => {
+    const scheduleData = await DoctorRecord.getSchedule(req.params.login);
+    res.json(scheduleData);
+  })
 
-        res.json(scheduleData);
-    })
+  .get('/getFormSchedule/:login', async (req, res) => {
+    console.log(req.query);
 
-    .get('/getHourList/:fromHour/:ToHour/:Date/:id/:id_terminu', async(req, res) => {
-        // console.log(req.params.id);
-        
-        const termData = await DoctorRecord.getTerm(req.params.fromHour, req.params.ToHour, req.params.Date, req.params.id, req.params.id_terminu)
+    const scheduleData = await DoctorRecord.getFormSchedule(req.params.login);
+    console.log(scheduleData);
+    res.json(scheduleData);
+  })
 
-        res.json(termData);
-    })
+  .get(
+    '/getHourList/:fromHour/:ToHour/:Date/:id/:id_terminu',
+    async (req, res) => {
+      // console.log(req.params.id);
 
-    .get('/getBookedTerms/:id_lek', async(req, res) => {
+      const termData = await DoctorRecord.getTerm(
+        req.params.fromHour,
+        req.params.ToHour,
+        req.params.Date,
+        req.params.id,
+        req.params.id_terminu
+      );
 
-        const bookedTermsData = await DoctorRecord.getBookedTerms(req.params.id_lek);
-        
-        res.json(bookedTermsData);
-    })
+      res.json(termData);
+    }
+  )
 
-    .get('/getHourFromTerm/:term_id', async(req, res) => {
-        const term_id = await DoctorRecord.getTermHour(req.params.term_id)
-        res.json(term_id);
-    })
+  .get('/getBookedTerms/:id_lek', async (req, res) => {
+    const bookedTermsData = await DoctorRecord.getBookedTerms(
+      req.params.id_lek
+    );
 
-    .get('/getOnePacient/:id_pacjenta', async(req, res) => {
-        const user = await DoctorRecord.getOnePacient(req.params.id_pacjenta)
-        res.json(user);
-    })
+    res.json(bookedTermsData);
+  })
 
-    .get('/getDateFromTerm/:id_terminu', async(req, res) => {
-        const date = await DoctorRecord.getDateFromTerm(req.params.id_terminu)
-        res.json(date);
-    })
+  .get('/getHourFromTerm/:term_id', async (req, res) => {
+    const term_id = await DoctorRecord.getTermHour(req.params.term_id);
+    res.json(term_id);
+  })
 
-    .post('/register', async(req, res) => {        
-        const newDoctor = new DoctorRecord(req.body as DoctorEntity);
-        // console.log(newDoctor);
-        
-        await newDoctor.insert();
+  .get('/getOnePacient/:id_pacjenta', async (req, res) => {
+    const user = await DoctorRecord.getOnePacient(req.params.id_pacjenta);
+    res.json(user);
+  })
 
-        res.send(newDoctor);
-    })
+  .get('/getDateFromTerm/:id_terminu', async (req, res) => {
+    const date = await DoctorRecord.getDateFromTerm(req.params.id_terminu);
+    res.json(date);
+  })
 
-    .post('/addTerm', async(req, res) => {
-        const newTerm = await DoctorRecord.addTerm(req.body.id, req.body.date, req.body.timeFrom, req.body.timeTo);
+  .post('/register', async (req, res) => {
+    const newDoctor = new DoctorRecord(req.body as DoctorEntity);
+    // console.log(newDoctor);
 
-        res.json(newTerm);
-    })
+    await newDoctor.insert();
 
-    .patch('/update', async(req,res) => {
-        console.log("update");
-        // console.log(req.body.name);
-        
-        const updateDoctor = await DoctorRecord.update(req.body.id, req.body.name, req.body.surname, req.body.speciality, req.body.city )
+    // res.send(newDoctor);
+  })
 
-        res.json(updateDoctor);
-    })
+  .post('/addTerm', async (req, res) => {
+    await DoctorRecord.addTerm(
+      req.body.id,
+      req.body.date,
+      req.body.timeFrom,
+      req.body.timeTo
+    );
+  })
 
-    .patch('/updateTerm', async(req, res) => {
-        const updateTerm = await DoctorRecord.updateTerm(req.body.id_terminu, req.body.timeF, req.body.timeT)
+  .patch('/update', async (req, res) => {
+    await DoctorRecord.update(
+      req.body.id,
+      req.body.name,
+      req.body.surname,
+      req.body.speciality,
+      req.body.city
+    );
+  })
 
-        res.json(updateTerm);
-    })
+  .patch('/updateTerm', async (req, res) => {
+    await DoctorRecord.updateTerm(
+      req.body.id_terminu,
+      req.body.timeF,
+      req.body.timeT
+    );
+  })
 
-    .delete('/delete/:doctorId', async(req,res) => {
-        await DoctorRecord.delete(req.params.doctorId);
-    })
+  .delete('/delete/:doctorId', async (req, res) => {
+    await DoctorRecord.delete(req.params.doctorId);
+  })
 
-    .delete('/cancelVisit/:id_wizyty', async(req, res) => {
-        await DoctorRecord.cancelVisit(req.params.id_wizyty)
-    })
+  .delete('/cancelVisit/:id_wizyty', async (req, res) => {
+    await DoctorRecord.cancelVisit(req.params.id_wizyty);
+  })
 
-    .delete('/deleteTerm/:id_terminu', async(req, res) => {
-        await DoctorRecord.deleteTerm(req.params.id_terminu);
-    })
+  .delete('/deleteTerm/:id_terminu', async (req, res) => {
+    await DoctorRecord.deleteTerm(req.params.id_terminu);
+  });

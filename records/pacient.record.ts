@@ -125,13 +125,13 @@ export class PacientRecord implements PacientEntity {
 
     static async getCities() {
         const [result] = await pool.execute("SELECT DISTINCT `city` FROM `lekarze`")
-
+        
         return result;        
     }
 
     static async getSpecialities() {
         const [result] = await pool.execute("SELECT DISTINCT `speciality` FROM `lekarze`")
-
+        
         return result;
     }
 
