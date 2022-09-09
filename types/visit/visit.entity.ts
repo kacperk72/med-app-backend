@@ -1,13 +1,14 @@
 export interface VisitEntity {
   city: string;
   data: string;
-  term_hour: string;
-  id: string;
   id_wizyty: string;
+  id_lekarza: string;
+  id_terminu: string;
   login: string;
   name: string;
   surname: string;
   reason: string;
   speciality: string;
-  term_id: number;
+  visit_hour: string;
+  visit_time: string;
 }

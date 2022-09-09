@@ -37,7 +37,7 @@ pacientRouter
   .get('/getVisitData/:id_lekarza/:id_terminu/:term_id', async (req, res) => {
     const id_lekarza = req.params.id_lekarza;
     const id_terminu = req.params.id_terminu;
-    const term_id = req.params.term_id;
+    // const term_id = req.params.term_id;
 
     const name = await PacientRecord.getName(id_lekarza);
 
@@ -45,11 +45,12 @@ pacientRouter
 
     const date = await PacientRecord.getDate(id_terminu);
 
-    const hour = await PacientRecord.getHour(term_id);
+    // const hour = await PacientRecord.getHour(term_id);
 
     // console.log(name, spec, date, hour);
 
-    const userData = { ...name, ...spec, ...date, ...hour };
+    // const userData = { ...name, ...spec, ...date, ...hour };
+    const userData = { ...name, ...spec, ...date };
 
     // console.log((userData));
 
@@ -68,10 +69,10 @@ pacientRouter
     const specialities = await PacientRecord.getSpecialities();
 
     res.json(specialities);
-  })
-
-  .delete('/cancelVisit/:hour/:user_id', async (req, res) => {
-    const hour = req.params.hour;
-    const user_id = req.params.user_id;
-    await PacientRecord.cancelVisit(hour, user_id);
   });
+
+//   .delete('/cancelVisit/:hour/:user_id', async (req, res) => {
+//     const hour = req.params.hour;
+//     const user_id = req.params.user_id;
+//     await PacientRecord.cancelVisit(hour, user_id);
+//   });

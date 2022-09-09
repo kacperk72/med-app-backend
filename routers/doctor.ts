@@ -32,12 +32,41 @@ doctorRouter
   })
 
   .get('/getFormSchedule/:login', async (req, res) => {
-    console.log(req.query);
+    // console.log(req.query);
+    const url = require('url');
+    const url_parts = url.parse(req.url, true);
+    const query = url_parts.query;
+    // console.log(query);
 
-    const scheduleData = await DoctorRecord.getFormSchedule(req.params.login);
-    console.log(scheduleData);
+    const searchForm = {
+      role: query.role,
+      city: query.city,
+      dateFrom: query.dateFrom,
+      dateTo: query.dateTo,
+      timeFrom: query.timeFrom,
+    };
+
+    // console.log(searchForm);
+
+    const scheduleData = await DoctorRecord.getFormSchedule(
+      req.params.login,
+      searchForm
+    );
+    // console.log(scheduleData);
     res.json(scheduleData);
   })
+
+  .get(
+    '/getHourSchedule/:id_terminu/:id_lekarza/:visitTime',
+    async (req, res) => {
+      const scheduleData = await DoctorRecord.getHourSchedule(
+        req.params.id_terminu,
+        req.params.id_lekarza,
+        req.params.visitTime
+      );
+      res.json(scheduleData);
+    }
+  )
 
   .get(
     '/getHourList/:fromHour/:ToHour/:Date/:id/:id_terminu',
@@ -64,10 +93,10 @@ doctorRouter
     res.json(bookedTermsData);
   })
 
-  .get('/getHourFromTerm/:term_id', async (req, res) => {
-    const term_id = await DoctorRecord.getTermHour(req.params.term_id);
-    res.json(term_id);
-  })
+  //   .get('/getHourFromTerm/:term_id', async (req, res) => {
+  //     const term_id = await DoctorRecord.getTermHour(req.params.term_id);
+  //     res.json(term_id);
+  //   })
 
   .get('/getOnePacient/:id_pacjenta', async (req, res) => {
     const user = await DoctorRecord.getOnePacient(req.params.id_pacjenta);

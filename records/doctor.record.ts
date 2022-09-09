@@ -3,15 +3,25 @@ import { ValidationError } from '../utils/errors';
 import { v4 as uuid } from 'uuid';
 import { pool } from '../utils/db';
 import { FieldPacket, RowDataPacket } from 'mysql2';
+import * as dayjs from 'dayjs';
+dayjs().format();
 
 type DoctorRecordResult = [DoctorRecord[], FieldPacket[]];
 
 export interface resultElement {
-  term_id: number;
+  //   term_id: number;
   godzina_wizyty: string;
   data: string;
   id: string;
   id_terminu: string;
+}
+
+export interface searchForm {
+  role: string;
+  city: string;
+  dateFrom: string;
+  dateTo: string;
+  timeFrom: string;
 }
 
 // export type DoctorRecordToEdit = Omit<DoctorRecord, 'id'|'login'|'password'|'role'>;
@@ -131,8 +141,19 @@ export class DoctorRecord implements DoctorRecord {
     return daneZGrafiku;
   }
 
-  static async getFormSchedule(login: string): Promise<Object | null> {
+  static async getFormSchedule(
+    login: string,
+    query: searchForm
+  ): Promise<Object | null> {
     // TODO: stworzyc zaptania zawęrzające wizyty na podstawie danych z formularza
+    const search = {
+      role: query.role,
+      city: query.city,
+      dateFrom: query.dateFrom + 'T00:00:00.000Z',
+      dateTo: query.dateTo,
+      timeFrom: query.timeFrom,
+    };
+    console.log(search);
 
     const [user_idJson] = await pool.execute<RowDataPacket[]>(
       'SELECT `user_id` FROM `dane_logowania` WHERE `login` = :login',
@@ -147,9 +168,116 @@ export class DoctorRecord implements DoctorRecord {
         user_id,
       }
     );
-    // console.log("dane z grafku", daneZGrafiku);
 
-    return daneZGrafiku;
+    const [daneLekarza] = await pool.execute<RowDataPacket[]>(
+      'SELECT `name`, `surname` FROM `dane_logowania` WHERE `user_id` = :user_id',
+      {
+        user_id,
+      }
+    );
+
+    const [daneLekarzaSpec] = await pool.execute<RowDataPacket[]>(
+      'SELECT `speciality`, `city` FROM `lekarze` WHERE `id_lekarza` = :user_id',
+      {
+        user_id,
+      }
+    );
+    // console.log('dane z grafku', daneZGrafiku);
+    // console.log('dane leakrza', daneLekarza);
+    // console.log('dane leakrza spec', daneLekarzaSpec);
+    const name = daneLekarza[0].name;
+    const surname = daneLekarza[0].surname;
+    const spec = daneLekarzaSpec[0].speciality;
+    const city = daneLekarzaSpec[0].city;
+
+    const dane = {
+      name,
+      surname,
+      spec,
+      city,
+      daneZGrafiku,
+    };
+    console.log(dane);
+    //filtrowanie danych
+
+    if (search.role !== '') {
+      if (!dane.spec.includes(search.role)) {
+        return {};
+      }
+    }
+    if (search.city !== '') {
+      if (!search.city.includes(dane.city)) {
+        return {};
+      }
+    }
+
+    //TODO: filtrowanie daty
+    // dane.daneZGrafiku.forEach(el => {
+    //     if (new Date(search.dateFrom) >= el.data){
+
+    //     }
+    // })
+
+    return dane;
+  }
+
+  static async getHourSchedule(
+    id_terminu: string,
+    id_lekarza: string,
+    visitTime: string
+  ) {
+    const [daneZGrafiku] = await pool.execute<RowDataPacket[]>(
+      'SELECT * FROM `grafik` WHERE `id_lekarza` = :id_lekarza',
+      {
+        id_lekarza,
+      }
+    );
+
+    // TODO: juz prawie jest lista godzin, trzeba będzie odejmować wizyty zajęte oraz filtrowanie z formularza.
+    const wolneTerminy: any = [];
+    let visitCountInHour = 0;
+    if (Number(visitTime) === 15) {
+      visitCountInHour = 4;
+    } else if (Number(visitTime) === 30) {
+      visitCountInHour = 2;
+    } else if (Number(visitTime) === 60) {
+      visitCountInHour = 1;
+    }
+    // console.log(daneZGrafiku);
+    daneZGrafiku.forEach((elem) => {
+      if (elem.id_terminu === id_terminu) {
+        const fromHour = Number(elem.od_godziny.split(':')[0]);
+        const toHour = Number(elem.do_godziny.split(':')[0]);
+        const iloscGodzin = toHour - fromHour;
+        const data = elem.data;
+        let minuty = Number(elem.od_godziny.split(':')[1]);
+        let godziny = fromHour;
+        for (let i = 0; i < visitCountInHour * iloscGodzin; i++) {
+          let godzina;
+          if (minuty === 0) {
+            godzina = String(godziny + ':' + minuty + '0' + ':00');
+          } else {
+            godzina = String(godziny + ':' + minuty + ':00');
+          }
+          const wolnyTermin = {
+            id_terminu,
+            id_lekarza,
+            data,
+            godzina,
+          };
+
+          wolneTerminy.push(wolnyTermin);
+          minuty += Number(visitTime);
+
+          if (minuty === 60) {
+            minuty = 0;
+            godziny++;
+          }
+        }
+      }
+    });
+
+    return wolneTerminy;
   }
 
   static async getTerm(
@@ -185,17 +313,17 @@ export class DoctorRecord implements DoctorRecord {
 
     let resultWithoutBooked = result;
     //usuwanie zajętych
-    for (let i = 0; i < result.length; i++) {
-      for (let j = 0; j < bookedTerms.length; j++) {
-        if (result[i].id_terminu == bookedTerms[j].id_terminu) {
-          if (result[i].id == bookedTerms[j].id_lekarza) {
-            if (result[i].term_id == bookedTerms[j].term_id) {
-              resultWithoutBooked.splice(i, 1);
-            }
-          }
-        }
-      }
-    }
+    // for (let i = 0; i < result.length; i++) {
+    //   for (let j = 0; j < bookedTerms.length; j++) {
+    //     if (result[i].id_terminu == bookedTerms[j].id_terminu) {
+    //       if (result[i].id == bookedTerms[j].id_lekarza) {
+    //         if (result[i].term_id == bookedTerms[j].term_id) {
+    //           resultWithoutBooked.splice(i, 1);
+    //         }
+    //       }
+    //     }
+    //   }
+    // }
     return result;
   }
 
@@ -303,15 +431,15 @@ export class DoctorRecord implements DoctorRecord {
     return bookedTerms;
   }
 
-  static async getTermHour(term_id: string) {
-    const [term_ID] = await pool.execute<RowDataPacket[]>(
-      'SELECT `godzina_wizyty` FROM `godziny_wizyt` WHERE `term_id` = :term_id',
-      {
-        term_id,
-      }
-    );
-    return term_ID[0];
-  }
+  //   static async getTermHour(term_id: string) {
+  //     const [term_ID] = await pool.execute<RowDataPacket[]>(
+  //       'SELECT `godzina_wizyty` FROM `godziny_wizyt` WHERE `term_id` = :term_id',
+  //       {
+  //         term_id,
+  //       }
+  //     );
+  //     return term_ID[0];
+  //   }
 
   static async getOnePacient(id_pacjenta: string) {
     const [user] = await pool.execute<RowDataPacket[]>(
