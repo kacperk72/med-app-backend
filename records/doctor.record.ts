@@ -4,7 +4,7 @@ import { v4 as uuid } from 'uuid';
 import { pool } from '../utils/db';
 import { FieldPacket, RowDataPacket } from 'mysql2';
 import * as dayjs from 'dayjs';
-dayjs().format();
+dayjs().format('HH:mm');
 
 type DoctorRecordResult = [DoctorRecord[], FieldPacket[]];
 
@@ -153,7 +153,7 @@ export class DoctorRecord implements DoctorRecord {
       dateTo: query.dateTo,
       timeFrom: query.timeFrom,
     };
-    console.log(search);
+    // console.log(search);
 
     const [user_idJson] = await pool.execute<RowDataPacket[]>(
       'SELECT `user_id` FROM `dane_logowania` WHERE `login` = :login',
