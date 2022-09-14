@@ -13,6 +13,42 @@ doctorRouter
     res.send(doctorList);
   })
 
+  .get('/getDoctorsSchedule', async (req, res) => {
+    const url = require('url');
+    const url_parts = url.parse(req.url, true);
+    const query = url_parts.query;
+
+    const searchForm = {
+      visitTime: query.visitTime,
+      role: query.role,
+      city: query.city,
+      dateFrom: query.dateFrom,
+      dateTo: query.dateTo,
+      timeFrom: query.timeFrom,
+    };
+
+    // pobierz lekarzy
+    let doctors = await DoctorRecord.getDoctors();
+
+    doctors.forEach(async (doctor) => {
+      // pobierz grafik dla lekarzy
+      const schedule = await DoctorRecord.addScheduleToDoctor(doctor);
+      schedule.forEach((term: any) => {
+        doctor.grafik.push(term);
+        // console.log(doctor);
+      });
+      // wyznaczyć wizyty dla każdego lekarza
+      await DoctorRecord.getVists(doctor, searchForm.visitTime);
+      // usunąć wizyty zajęte
+      await DoctorRecord.deleteBookedVisits(doctor);
+    });
+
+    // odesłać cały grafik
+    setTimeout(() => {
+      res.json(doctors);
+    }, 1000);
+  })
+
   .get('/getOne/:login', async (req, res) => {
     // console.log("req body", req.body);
     const {

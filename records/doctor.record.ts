@@ -95,6 +95,115 @@ export class DoctorRecord implements DoctorRecord {
     return this.id;
   }
 
+  /////////////////////////////////////////////////////////
+  static async getDoctors(): Promise<RowDataPacket[] | null> {
+    // console.log('pobieram lekarzy');
+    const [doctors] = await pool.execute<RowDataPacket[]>(
+      'SELECT `user_id`, `name`, `surname` FROM `dane_logowania` WHERE `role` = "lekarz"'
+    );
+    return Promise.resolve(doctors);
+  }
+
+  static async addScheduleToDoctor(doctor: any): Promise<any> {
+    // console.log('pobieram terminy');
+    doctor.grafik = [];
+    const id = doctor.user_id;
+    const [daneZGrafiku] = await pool.execute<RowDataPacket[]>(
+      'SELECT `id_terminu`,`data`,`od_godziny`,`do_godziny` FROM `grafik` WHERE `id_lekarza` = :id',
+      {
+        id,
+      }
+    );
+    return Promise.resolve(daneZGrafiku);
+  }
+
+  static async getVists(doctor: any, visitTime: string) {
+    // console.log('pobieram wizyty');
+    doctor.visits = [];
+    doctor.grafik.forEach(async (term: any) => {
+      // console.log('termin', term);
+      const visitsOneTerm = DoctorRecord.getVIS(term, visitTime);
+      (await visitsOneTerm).forEach((element) => {
+        doctor.visits.push(element);
+      });
+    });
+    return doctor;
+  }
+
+  static async getVIS(term: any, visitTime: string): Promise<Object[]> {
+    const wolneTerminy: any = [];
+    let visitCountInHour = 0;
+    if (Number(visitTime) === 15) {
+      visitCountInHour = 4;
+    } else if (Number(visitTime) === 30) {
+      visitCountInHour = 2;
+    } else if (Number(visitTime) === 60) {
+      visitCountInHour = 1;
+    }
+    // console.log('term', term);
+    const fromHour = Number(term.od_godziny.split(':')[0]);
+    const toHour = Number(term.do_godziny.split(':')[0]);
+    const iloscGodzin = toHour - fromHour;
+    const data = term.data;
+    let minuty = Number(term.od_godziny.split(':')[1]);
+    let godziny = fromHour;
+    for (let i = 0; i < visitCountInHour * iloscGodzin; i++) {
+      let godzina;
+      if (minuty === 0) {
+        godzina = String(godziny + ':' + minuty + '0' + ':00');
+      } else {
+        godzina = String(godziny + ':' + minuty + ':00');
+      }
+      const id_terminu = term.id_terminu;
+      const wolnyTermin = {
+        id_terminu,
+        data,
+        godzina,
+      };
+
+      wolneTerminy.push(wolnyTermin);
+      minuty += Number(visitTime);
+
+      if (minuty === 60) {
+        minuty = 0;
+        godziny++;
+      }
+    }
+    // console.log(wolneTerminy);
+    return wolneTerminy;
+  }
+
+  static async deleteBookedVisits(doctor: any) {
+    // console.log(doctor);
+    // pobierz zarezerwowane wizyty
+    const [bookedVisits] = await pool.execute(
+      'SELECT `id_lekarza`,`id_terminu`,`visit_hour` FROM `wizyty`;'
+    );
+    // console.log(bookedVisits);
+    // console.log('doktor', doctor);
+
+    [bookedVisits].forEach((element: any) => {
+      element.forEach((bookedVisit: any) => {
+        if (doctor.user_id === bookedVisit.id_lekarza) {
+          doctor.visits.forEach((visit: any) => {
+            if (visit.id_terminu === bookedVisit.id_terminu) {
+              // doctor.visits.filter(
+              //   (visit: any) => (visit.godzina = !bookedVisit.visit_hour)
+              // );
+              // jakiś filtr trzeba zrobić żeby usuwało te co znajdzie
+
+              console.log('znalazłem', bookedVisit);
+            }
+          });
+        }
+      });
+    });
+    console.log('doktor', doctor);
+
+    // porównaj je i usuń zarezerwowane
+  }
+
+  /////////////////////////////////////////////////////////
   static async getOne(login: string): Promise<Object | null> {
     // console.log("login", login);
     const [user_idJson] = await pool.execute<RowDataPacket[]>(
@@ -197,7 +306,7 @@ export class DoctorRecord implements DoctorRecord {
       city,
       daneZGrafiku,
     };
-    console.log(dane);
+    // console.log(dane);
     //filtrowanie danych
 
     if (search.role !== '') {
