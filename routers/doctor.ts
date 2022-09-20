@@ -13,38 +13,49 @@ doctorRouter
     res.send(doctorList);
   })
 
-  .get('/getDoctorsSchedule', async (req, res) => {
+  .get('/getDoctorsSchedule/:paginator', async (req, res) => {
     const url = require('url');
     const url_parts = url.parse(req.url, true);
     const query = url_parts.query;
+    const paginator = req.params.paginator;
 
     const searchForm = {
       visitTime: query.visitTime,
       role: query.role,
       city: query.city,
       dateFrom: query.dateFrom,
-      dateTo: query.dateTo,
+      // dateTo: query.dateTo,
       timeFrom: query.timeFrom,
     };
 
     // pobierz lekarzy
-    let doctors = await DoctorRecord.getDoctors();
+    let doctors = await DoctorRecord.getDoctors(
+      searchForm.role,
+      searchForm.city
+    );
 
     doctors.forEach(async (doctor) => {
-      // pobierz grafik dla lekarzy
-      const schedule = await DoctorRecord.addScheduleToDoctor(doctor);
+      await DoctorRecord.getSpecAndCity(doctor);
+      const schedule = await DoctorRecord.addScheduleToDoctor(
+        doctor,
+        searchForm.dateFrom,
+        paginator
+      );
       schedule.forEach((term: any) => {
         doctor.grafik.push(term);
-        // console.log(doctor);
       });
-      // wyznaczyć wizyty dla każdego lekarza
-      await DoctorRecord.getVists(doctor, searchForm.visitTime);
-      // usunąć wizyty zajęte
+      await DoctorRecord.getVists(
+        doctor,
+        searchForm.visitTime,
+        searchForm.timeFrom
+      );
       await DoctorRecord.deleteBookedVisits(doctor);
     });
 
-    // odesłać cały grafik
     setTimeout(() => {
+      // doctors.forEach((doctor) => {
+      //   console.log(doctor.visits);
+      // });
       res.json(doctors);
     }, 1000);
   })

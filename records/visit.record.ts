@@ -10,13 +10,12 @@ export class VisitRecord implements VisitRecord {
     console.log('rezerwowanie wizyty');
     // console.log(termData);
 
-    const [id_pacjentaJSON] = await pool.execute<RowDataPacket[]>(
-      'SELECT `user_id` FROM `dane_logowania` WHERE `login` = :login',
-      {
-        login: termData.login,
-      }
+    const user_id = await VisitRecord.getUserId(termData.login);
+
+    const id_lekarza = await VisitRecord.getDoctorId(
+      termData.name,
+      termData.surname
     );
-    const { user_id } = id_pacjentaJSON[0];
 
     if (!termData.id_wizyty) {
       termData.id_wizyty = uuid();
@@ -26,16 +25,39 @@ export class VisitRecord implements VisitRecord {
       'INSERT INTO `wizyty` (`id_wizyty`,`id_lekarza`,`id_pacjenta`,`id_terminu`,`reason_of_visit`,`visit_hour`,`visit_time`) VALUES(:id_wizyty, :id_lekarza, :id_pacjenta, :id_terminu, :reason_of_visit, :visit_hour, :visit_time)',
       {
         id_wizyty: termData.id_wizyty,
-        id_lekarza: termData.id_lekarza,
+        id_lekarza: id_lekarza,
         id_pacjenta: user_id,
         id_terminu: termData.id_terminu,
         reason_of_visit: termData.reason,
-        visit_hour: termData.visit_hour,
-        visit_time: termData.visit_time,
+        visit_hour: termData.godzina,
+        visit_time: 15,
       }
     );
 
     return 'dodano rezerwację';
+  }
+
+  static async getUserId(login: string) {
+    const [id_pacjentaJSON] = await pool.execute<RowDataPacket[]>(
+      'SELECT `user_id` FROM `dane_logowania` WHERE `login` = :login',
+      {
+        login,
+      }
+    );
+    const { user_id } = id_pacjentaJSON[0];
+    return Promise.resolve(user_id);
+  }
+
+  static async getDoctorId(name: string, surname: string) {
+    const [id_lekarzaJSON] = await pool.execute<RowDataPacket[]>(
+      'SELECT `user_id` FROM `dane_logowania` WHERE `name` = :name AND `surname` = :surname',
+      {
+        name,
+        surname,
+      }
+    );
+    const { user_id } = id_lekarzaJSON[0];
+    return Promise.resolve(user_id);
   }
 
   static async checkVisit(data: string, godzina: string, id_lek: string) {

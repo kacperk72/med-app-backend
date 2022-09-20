@@ -96,41 +96,131 @@ export class DoctorRecord implements DoctorRecord {
   }
 
   /////////////////////////////////////////////////////////
-  static async getDoctors(): Promise<RowDataPacket[] | null> {
+  static async getDoctors(
+    speciality: string,
+    city: string
+  ): Promise<RowDataPacket[] | null> {
     // console.log('pobieram lekarzy');
-    const [doctors] = await pool.execute<RowDataPacket[]>(
-      'SELECT `user_id`, `name`, `surname` FROM `dane_logowania` WHERE `role` = "lekarz"'
-    );
+    let doctors;
+    if (speciality !== '' && city !== '') {
+      [doctors] = await pool.execute<RowDataPacket[]>(
+        'SELECT `user_id`, `name`, `surname`,`speciality`,`city` FROM `lekarze` LEFT JOIN `dane_logowania` ON `id_lekarza` = `user_id` WHERE `speciality` = :speciality AND `city` = :city ;',
+        {
+          city,
+          speciality,
+        }
+      );
+    }
+    if (speciality === '' && city !== '') {
+      [doctors] = await pool.execute<RowDataPacket[]>(
+        'SELECT `user_id`, `name`, `surname`,`speciality`,`city` FROM `lekarze` LEFT JOIN `dane_logowania` ON `id_lekarza` = `user_id` WHERE `city` = :city ;',
+        {
+          city,
+        }
+      );
+    }
+    if (speciality !== '' && city === '') {
+      [doctors] = await pool.execute<RowDataPacket[]>(
+        'SELECT `user_id`, `name`, `surname`,`speciality`,`city` FROM `lekarze` LEFT JOIN `dane_logowania` ON `id_lekarza` = `user_id` WHERE `speciality` = :speciality ;',
+        {
+          speciality,
+        }
+      );
+    }
+    if (speciality === '' && city === '') {
+      [doctors] = await pool.execute<RowDataPacket[]>(
+        'SELECT `user_id`, `name`, `surname` FROM `dane_logowania` WHERE `role` = "lekarz"'
+      );
+    }
+
     return Promise.resolve(doctors);
   }
 
-  static async addScheduleToDoctor(doctor: any): Promise<any> {
-    // console.log('pobieram terminy');
-    doctor.grafik = [];
+  static async getSpecAndCity(doctor: any) {
     const id = doctor.user_id;
-    const [daneZGrafiku] = await pool.execute<RowDataPacket[]>(
-      'SELECT `id_terminu`,`data`,`od_godziny`,`do_godziny` FROM `grafik` WHERE `id_lekarza` = :id',
+    const [dane] = await pool.execute<RowDataPacket[]>(
+      'SELECT `speciality`,`city` FROM `lekarze` WHERE id_lekarza = :id',
       {
         id,
       }
     );
+    doctor.speciality = dane[0].speciality;
+    doctor.city = dane[0].city;
+
+    return Promise.resolve(doctor);
+  }
+
+  static async addScheduleToDoctor(
+    doctor: any,
+    dateFrom: string,
+    paginator: string
+  ): Promise<any> {
+    // console.log('pobieram terminy');
+    doctor.grafik = [];
+    const id = doctor.user_id;
+    let daneZGrafiku;
+    const data = new Date(dateFrom);
+    const firstWeek = dayjs().add(7, 'day').format('YYYY-MM-DDTHH:mm:ssZ[Z]');
+    const firstTwoWeeks = dayjs()
+      .add(14, 'day')
+      .format('YYYY-MM-DDTHH:mm:ssZ[Z]');
+
+    if (dateFrom === '' && paginator === '1') {
+      [daneZGrafiku] = await pool.execute<RowDataPacket[]>(
+        'SELECT `id_terminu`,`data`,`od_godziny`,`do_godziny` FROM `grafik` WHERE `id_lekarza` = :id AND `data` < :dataPaginator',
+        {
+          id,
+          dataPaginator: firstWeek,
+        }
+      );
+    } else if (dateFrom === '' && paginator === '2') {
+      [daneZGrafiku] = await pool.execute<RowDataPacket[]>(
+        'SELECT `id_terminu`,`data`,`od_godziny`,`do_godziny` FROM `grafik` WHERE `id_lekarza` = :id AND `data` < :dataPaginator',
+        {
+          id,
+          dataPaginator: firstTwoWeeks,
+        }
+      );
+    } else {
+      [daneZGrafiku] = await pool.execute<RowDataPacket[]>(
+        'SELECT `id_terminu`,`data`,`od_godziny`,`do_godziny` FROM `grafik` WHERE `id_lekarza` = :id AND `data` > :data',
+        {
+          id,
+          data,
+        }
+      );
+    }
+
     return Promise.resolve(daneZGrafiku);
   }
 
-  static async getVists(doctor: any, visitTime: string) {
+  static async getVists(doctor: any, visitTime: string, timeFrom: string) {
     // console.log('pobieram wizyty');
     doctor.visits = [];
     doctor.grafik.forEach(async (term: any) => {
       // console.log('termin', term);
-      const visitsOneTerm = DoctorRecord.getVIS(term, visitTime);
-      (await visitsOneTerm).forEach((element) => {
-        doctor.visits.push(element);
+      const visitsOneTerm = DoctorRecord.getVIS(term, visitTime, timeFrom);
+      (await visitsOneTerm).forEach((element: any) => {
+        if (timeFrom !== '') {
+          if (element.godzina.split(':')[0] < 10) {
+            element.godzina = '0' + element.godzina;
+          }
+          if (element.godzina > timeFrom) {
+            doctor.visits.push(element);
+          }
+        } else {
+          doctor.visits.push(element);
+        }
       });
     });
     return doctor;
   }
 
-  static async getVIS(term: any, visitTime: string): Promise<Object[]> {
+  static async getVIS(
+    term: any,
+    visitTime: string,
+    timeFrom: string
+  ): Promise<Object[]> {
     const wolneTerminy: any = [];
     let visitCountInHour = 0;
     if (Number(visitTime) === 15) {
@@ -160,7 +250,6 @@ export class DoctorRecord implements DoctorRecord {
         data,
         godzina,
       };
-
       wolneTerminy.push(wolnyTermin);
       minuty += Number(visitTime);
 
@@ -184,23 +273,24 @@ export class DoctorRecord implements DoctorRecord {
 
     [bookedVisits].forEach((element: any) => {
       element.forEach((bookedVisit: any) => {
+        // console.log('bookedVisit', bookedVisit);
         if (doctor.user_id === bookedVisit.id_lekarza) {
           doctor.visits.forEach((visit: any) => {
+            // console.log('visit', visit);
             if (visit.id_terminu === bookedVisit.id_terminu) {
-              // doctor.visits.filter(
-              //   (visit: any) => (visit.godzina = !bookedVisit.visit_hour)
-              // );
-              // jakiś filtr trzeba zrobić żeby usuwało te co znajdzie
-
-              console.log('znalazłem', bookedVisit);
+              // if (visit.godzina === bookedVisit.visit_hour) {
+              doctor.visits.splice(
+                doctor.visits.findIndex((e: any) => e === visit),
+                1
+              );
+              // console.log('znalazłem', visit);
             }
+            // }
           });
         }
       });
     });
-    console.log('doktor', doctor);
-
-    // porównaj je i usuń zarezerwowane
+    // console.log('doktor', doctor);
   }
 
   /////////////////////////////////////////////////////////
