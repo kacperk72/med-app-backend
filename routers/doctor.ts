@@ -34,30 +34,31 @@ doctorRouter
       searchForm.city
     );
 
-    doctors.forEach(async (doctor) => {
+    // const x = async (doctors: any[]) => {
+    for (let i = 0; i < doctors.length; i++) {
+      const doctor = doctors[i];
       await DoctorRecord.getSpecAndCity(doctor);
       const schedule = await DoctorRecord.addScheduleToDoctor(
         doctor,
         searchForm.dateFrom,
         paginator
       );
-      schedule.forEach((term: any) => {
-        doctor.grafik.push(term);
-      });
+      schedule.forEach((term: any) => doctor.grafik.push(term));
       await DoctorRecord.getVists(
         doctor,
         searchForm.visitTime,
         searchForm.timeFrom
       );
-      await DoctorRecord.deleteBookedVisits(doctor);
-    });
 
-    setTimeout(() => {
-      // doctors.forEach((doctor) => {
-      //   console.log(doctor.visits);
-      // });
-      res.json(doctors);
-    }, 1000);
+      await DoctorRecord.deleteBookedVisits(doctor);
+    }
+
+    // setTimeout(() => {
+    // doctors.forEach((doctor) => {
+    //   console.log(doctor.visits);
+    // });
+    res.json(doctors);
+    // }, 1000);
   })
 
   .get('/getOne/:login', async (req, res) => {
